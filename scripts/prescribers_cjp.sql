@@ -52,7 +52,7 @@ WHERE total_claim_count IS NOT NULL
 AND opioid_drug_flag = 'Y'
 GROUP BY specialty_description
 ORDER BY opioid_rx DESC;
---Nurse Practitioner
+--Nurse Practitioner (900,845 total claim count)
 
 -- Looking for a count of both opioid columns and result was 29 for both
 -- SELECT COUNT(opioid_drug_flag) AS opioid_1, COUNT(long_acting_opioid_drug_flag) AS opioid_2
@@ -61,6 +61,25 @@ ORDER BY opioid_rx DESC;
 -- AND long_acting_opioid_drug_flag = 'Y';
 
 --     c. **Challenge Question:** Are there any specialties that appear in the prescriber table that have no associated prescriptions in the prescription table?
+
+SELECT specialty_description, drug_name, SUM(total_claim_count) AS sum_totalclaims
+FROM prescriber
+LEFT JOIN prescription
+USING (npi)
+LEFT JOIN drug
+USING (drug_name) 
+WHERE drug_name IS NULL
+GROUP BY specialty_description, drug_name;
+--Yes, running the above syntax shows 92 specialties without a drug name 
+--changed to full join and still got 92 specialties.
+--SELECT specialty_description, drug_name, SUM(total_claim_count) AS sum_totalclaims
+-- FROM prescriber
+-- FULL JOIN prescription
+-- USING (npi)
+-- FULL JOIN drug
+-- USING (drug_name) 
+-- WHERE drug_name IS NULL
+-- GROUP BY specialty_description, drug_name;
 
 --     d. **Difficult Bonus:** *Do not attempt until you have solved all other problems!* For each specialty, report the percentage of total claims by that specialty which are for opioids. Which specialties have a high percentage of opioids?
 
