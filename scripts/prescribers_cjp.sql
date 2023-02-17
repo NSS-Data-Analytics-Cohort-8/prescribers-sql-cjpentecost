@@ -35,9 +35,10 @@ SELECT specialty_description, SUM(total_claim_count) AS sum_totalclaims
 FROM prescriber
 LEFT JOIN prescription
 USING (npi)
+WHERE total_claim_count IS NOT NULL
 GROUP BY specialty_description
 ORDER BY sum_totalclaims DESC;
---play with the join and add IS NOT NULL
+--Family Practice : 9,752,347
 
 --     b. Which specialty had the most total number of claims for opioids?
 
