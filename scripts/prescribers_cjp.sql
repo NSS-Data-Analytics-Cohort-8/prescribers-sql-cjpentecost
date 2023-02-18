@@ -205,29 +205,30 @@ ORDER BY sum_totalclms DESC;
 
 SELECT npi, drug_name, specialty_description, opioid_drug_flag, nppes_provider_city
 FROM prescriber
-LEFT JOIN prescription
-USING (npi)
-LEFT JOIN drug
-USING (drug_name)
+CROSS JOIN drug
 WHERE opioid_drug_flag IN
 	(SELECT opioid_drug_flag
 	FROM drug
 	LEFT JOIN prescription USING (drug_name)
 	WHERE opioid_drug_flag = 'Y')
 AND specialty_description = 'Pain Management' AND nppes_provider_city = 'NASHVILLE';
---result set contains 35 rows
+--result set contains 637rows
 
 --     b. Next, report the number of claims per drug per prescriber. Be sure to include all combinations, whether or not the prescriber had any claims. You should report the npi, the drug name, and the number of claims (total_claim_count).
 
-SELECT npi, drug_name, SUM(total_claim_count) AS total_claims
-FROM prescriber
-FULL JOIN prescription
+SELECT  npi, d.drug_name, specialty_description, opioid_drug_flag, nppes_provider_city, SUM (total_claim_count) AS total_claims
+FROM prescriber AS md
+INNER JOIN prescription
 USING (npi)
-FULL JOIN drug
-USING (drug_name)
-GROUP BY npi, drug_name
-ORDER BY total_claims DESC;
-
-
+CROSS JOIN drug AS d
+WHERE opioid_drug_flag IN
+	(SELECT opioid_drug_flag
+	FROM drug
+	LEFT JOIN prescription USING (drug_name)
+	WHERE opioid_drug_flag = 'Y')
+AND specialty_description = 'Pain Management' AND nppes_provider_city = 'NASHVILLE'
+GROUP BY  npi, d.drug_name, specialty_description, opioid_drug_flag, nppes_provider_city
+ORDER BY total_claims ASC;
+--result set contains 637rows
     
 --     c. Finally, if you have not done so already, fill in any missing values for total_claim_count with 0. Hint - Google the COALESCE function.
