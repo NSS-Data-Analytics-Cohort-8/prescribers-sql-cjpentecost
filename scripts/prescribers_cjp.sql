@@ -185,7 +185,7 @@ USING (drug_name)
 WHERE total_claim_count >= 3000
 GROUP BY drug_name, opioid_drug_flag
 ORDER BY sum_totalclms ASC;
---Lazily done, but column added and Hydrocodone-acetaminophen and oxycodone HCL are identified as opioids.
+--Lazily done, but column added and Hydrocodone-acetaminophen and oxycodone HCL are identified as opioids. 
 
 --     c. Add another column to you answer from the previous part which gives the prescriber first and last name associated with each row.
 
@@ -203,14 +203,31 @@ ORDER BY sum_totalclms DESC;
 
 --     a. First, create a list of all npi/drug_name combinations for pain management specialists (specialty_description = 'Pain Managment') in the city of Nashville (nppes_provider_city = 'NASHVILLE'), where the drug is an opioid (opiod_drug_flag = 'Y'). **Warning:** Double-check your query before running it. You will only need to use the prescriber and drug tables since you don't need the claims numbers yet.
 
-SELECT npi, drug_name
+SELECT npi, drug_name, specialty_description, opioid_drug_flag, nppes_provider_city
 FROM prescriber
 LEFT JOIN prescription
 USING (npi)
-
-
-
+LEFT JOIN drug
+USING (drug_name)
+WHERE opioid_drug_flag IN
+	(SELECT opioid_drug_flag
+	FROM drug
+	LEFT JOIN prescription USING (drug_name)
+	WHERE opioid_drug_flag = 'Y')
+AND specialty_description = 'Pain Management' AND nppes_provider_city = 'NASHVILLE';
+--result set contains 35 rows
 
 --     b. Next, report the number of claims per drug per prescriber. Be sure to include all combinations, whether or not the prescriber had any claims. You should report the npi, the drug name, and the number of claims (total_claim_count).
+
+SELECT npi, drug_name, SUM(total_claim_count) AS total_claims
+FROM prescriber
+FULL JOIN prescription
+USING (npi)
+FULL JOIN drug
+USING (drug_name)
+GROUP BY npi, drug_name
+ORDER BY total_claims DESC;
+
+
     
 --     c. Finally, if you have not done so already, fill in any missing values for total_claim_count with 0. Hint - Google the COALESCE function.
